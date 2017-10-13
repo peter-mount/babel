@@ -1,0 +1,18 @@
+#!/bin/ash
+#
+# usage:
+#
+# babel node_modules destdir
+#
+
+cd /usr/local/babel
+
+# source must be local to babel so copy it into place
+rm -rf src &&\
+mkdir -p src &&\
+cp -rp $1/* src &&\
+exec node ./node_modules/babel-cli/bin/babel.js \
+    --plugins transform-es2015-modules-umd \
+    src \
+    --ignore __tests__ \
+    --out-dir $2

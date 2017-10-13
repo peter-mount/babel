@@ -1,0 +1,8 @@
+#!/bin/ash
+#
+# usage:
+#
+# eslint src
+#
+cd /usr/local/babel
+node ./node_modules/eslint/bin/eslint.js $1

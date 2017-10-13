@@ -1,0 +1,14 @@
+#!/bin/ash
+#
+# usage:
+#
+# eslint src
+#
+
+cd /usr/local/babel
+
+# source must be local to babel so copy it into place
+rm -rf src &&\
+mkdir -p src &&\
+cp -rp $1/* src &&\
+node ./node_modules/eslint/bin/eslint.js src

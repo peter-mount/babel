@@ -59,11 +59,9 @@ ARG arch=amd64
 
 FROM area51/${arch}-node:latest
 
-WORKDIR /opt/babel
-
-# Install our build environment
-ADD * /opt/babel/
-#ADD package.json .
-#ADD .babelrc .
-#ADD .eslintrc .
+ADD local/babel /usr/local/babel
+WORKDIR /usr/local/babel
 RUN npm install
+
+ADD local/bin /usr/local/bin/
+RUN chmod +x /usr/local/bin/*
