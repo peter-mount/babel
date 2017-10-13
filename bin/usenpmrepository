@@ -1,0 +1,12 @@
+#!/bin/ash
+#
+# Sets the third party npm repository to usage
+#
+RC=/root/.npmrc
+
+if [ -z "$1" ]
+then
+  rm -f $RC
+else
+  echo "registry=$1" >$RC
+fi

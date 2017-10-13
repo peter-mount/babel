@@ -5,14 +5,29 @@
 # babel node_modules destdir
 #
 
-cd /usr/local/babel
+SRC=$1
+DST=$2
+
+if [ -z "$DST" ]
+then
+  DST=$(pwd)
+fi
+
+BABELDIR=/usr/local/babel
+TMPSRC=$BABELDIR/src
 
 # source must be local to babel so copy it into place
-rm -rf src &&\
-mkdir -p src &&\
-cp -rp $1/* src &&\
+rm -rf $TMPSRC &&\
+mkdir -p $TMPSRC &&\
+cp -rp $SRC/* $TMPSRC &&\
+echo node ./node_modules/babel-cli/bin/babel.js \
+    --plugins transform-es2015-modules-umd \
+    $TMPSRC \
+    --ignore __tests__ \
+    --out-dir $DST &&\
+cd $BABELDIR &&\
 exec node ./node_modules/babel-cli/bin/babel.js \
     --plugins transform-es2015-modules-umd \
-    src \
+    $TMPSRC \
     --ignore __tests__ \
-    --out-dir $2
+    --out-dir $DST
