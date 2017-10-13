@@ -32,7 +32,7 @@ When the container is run then index.js will be used.
     ADD package.json .
     RUN npm install
 
-    # Now compile the module
+    # Now compile the source
     ADD src /tmp/src/
     RUN eslint /tmp/src
     RUN babel /tmp/src
