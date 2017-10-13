@@ -1,0 +1,14 @@
+#!/bin/ash
+#
+# usage:
+#
+# eslintfix
+#
+
+if [ -d "/usr/local/babel/src" ]
+then
+  cd /usr/local/babel
+  node ./node_modules/eslint/bin/eslint.js --fix src
+else
+  echo "No source under /usr/local/babel/src"
+fi

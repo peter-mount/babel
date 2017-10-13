@@ -8,7 +8,11 @@
 cd /usr/local/babel
 
 # source must be local to babel so copy it into place
-rm -rf src &&\
-mkdir -p src &&\
-cp -rp $1/* src &&\
+if [ "$(cd $1;pwd)" != "/usr/local/babel/src" ]
+then
+  rm -rf src &&\
+  mkdir -p src &&\
+  cp -rp $1/* src || exit 1
+fi
+
 node ./node_modules/eslint/bin/eslint.js src
