@@ -6,12 +6,19 @@ The reason for this is that babel is itself pretty large so this image reduces t
 
 ## Including in a build
 
-In this example we have the local repository laid out as:
-    Dockerfile
-    package.json
-    src/index.js
+In this example we have a simple project with three files:
+* Dockerfile
+* package.json
+* src/index.js
 
-The docker file will then install the application into /opt/node with packages in /opt/node/node_modules and src/index.js compiled as /opt/node/index.js
+The docker file will then compile the project and install it in to the /opt/node directory of the container.
+
+* /opt/node/node_modules/
+* /opt/node/index.js
+
+When the container is run then index.js will be used.
+
+### Dockerfile
 
     # The default architecture
     ARG arch=amd64
