@@ -61,9 +61,6 @@ FROM area51/${arch}-node:latest
 
 WORKDIR /opt/babel
 
-# Add our npm repository
-RUN echo "registry=https://npm.area51.onl/" > .npmrc
-
 # Install our build environment
 ADD * /opt/babel/
 #ADD package.json .
