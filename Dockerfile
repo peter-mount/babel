@@ -59,9 +59,9 @@ ARG arch=amd64
 
 FROM area51/${arch}-node:latest
 
-ADD local/babel /usr/local/babel
+ADD babel /usr/local/babel
 WORKDIR /usr/local/babel
 RUN npm install
 
-ADD local/bin /usr/local/bin/
+ADD bin /usr/local/bin/
 RUN chmod +x /usr/local/bin/*
