@@ -22,7 +22,7 @@ The docker file will then install the application into /opt/node with packages i
     WORKDIR /opt/node
 
     # Install our dependencies
-    ADD $module/package.json .
+    ADD package.json .
     RUN npm install
 
     # Now compile the module
@@ -34,17 +34,16 @@ The docker file will then install the application into /opt/node with packages i
     FROM area51/${arch}-node:latest
     LABEL maintainer="Peter Mount <peter@retep.org>"
 
-    WORKDIR /opt/node
-
     COPY --from=builder /opt/node /opt/node/
 
+    WORKDIR /opt/node
     CMD ["node","index.js"]
 
 ## How this works
 
 This Dockerfile is a multi stage build. Stage 1 does the compilation whilst stage 2 creates the final image.
 
-### Multi-architectures
+### Multiple architecture support
 
 The ARG arch=amd64 line defines the default architecture for the build, so if you run:
 
@@ -54,7 +53,7 @@ Then it will build on amd64.
 
 If you are running on a different architecture then you can select this on the build line. e.g.
 
-    docker build -t mytag --build-arg arch=amd64 .
+    docker build -t mytag --build-arg arch=arm64v8 .
 
 The supported architectures are:
 * amd64
@@ -63,25 +62,48 @@ The supported architectures are:
 
 ### Stage 1 - compilation
 
+    FROM area51/${arch}-babel:latest as builder
+
 Here we use this image as the underlying image and label it as builder.
 
-We then set the WORKDIR to where we want the application to be install to within the container.
+    WORKDIR /opt/node
 
-Next we add package.json and run npm install to install the applications dependencies.
+This defines where we want the application to be installed within the container.
 
-After that we copy the src directory into /tmp/src in the image.
+    ADD package.json .
+    RUN npm install
 
-Note: We do this after running npm install so that if the source changes but not package.json we utilises docker's cache and don't install the dependencies every time - another time saver.
+Next we add the project's package.json and run npm install to install the project's dependencies.
+
+    ADD src /tmp/src/
+
+After installing the dependencies we copy the src directory into /tmp/src in the image.
+
+*Note:* We do this after running npm install so that if the source changes but not package.json we utilise docker's cache and don't install the dependencies every time we run a build - another time saver.
+
+    RUN eslint /tmp/src
 
 Next we run eslint against /tmp/src. This is optional but allows for errors to be found before compilation.
+
+    RUN babel /tmp/src
 
 Finally we run babel against /tmp/src. This will compile those .js files and place them unto the currect WORKDIR.
 
 ### Stage 2 - building the final image
 
-Here we use the final page image, here our own node image. We set WORKDIR to the same location then copy that directory from stage 1.
+    FROM area51/${arch}-node:latest
+    LABEL maintainer="Peter Mount <peter@retep.org>"
 
-Finally we add the command to start the application.
+This selects the base image for the final image, here our own node image but you can use any image that includes nodejs.
+
+    COPY --from=builder /opt/node /opt/node/
+
+Here we copy the application from stage 1 into this image.
+
+    WORKDIR /opt/node
+    CMD ["node","index.js"]
+
+Finally we set the WORKDIR to the application base and the command to run it when the container starts.
 
 ## Command reference
 
