@@ -161,3 +161,10 @@ If overriding .eslintrc when using eslintfix you need to mount it on the command
       -v $(pwd)/.eslintrc:/usr/local/babel/.eslintrc:ro \
       -v $(pwd)/src:/usr/local/babel/src area51/amd64-babel \
       eslintfix
+
+## Build status
+
+| Image | Architecture | Build Status |
+| -------- | :---------------: | ---------------- | 
+| [area51/amd64-babel](https://hub.docker.com/r/area51/amd64-babel/) | amd64 | [![Build Status](https://jenkins.area51.onl/buildStatus/icon?job=Public/babel-amd64)](https://jenkins.area51.onl/job/Public/babel-amd64)
+| [area51/arm64v8-babel](https://hub.docker.com/r/area51/arm64v8-babel/) | arm64v8 | [![Build Status](https://jenkins.area51.onl/buildStatus/icon?job=Public/babel-arm64v8)](https://jenkins.area51.onl/job/Public/babel-arm64v8)
