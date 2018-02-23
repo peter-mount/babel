@@ -68,10 +68,7 @@ architectures.each {
     }
 
     stage( 'Build ' + architecture ) {
-      sh 'docker build' +
-        ' -t ' + dockerImage( architecture ) +
-        ' --build-arg VERSION=' + buildVersion +
-        ' .'
+      sh 'docker build -t ' + dockerImage( architecture ) + ' .'
     }
 
     stage( 'Publish ' + architecture ) {
