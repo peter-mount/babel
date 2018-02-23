@@ -63,14 +63,18 @@ architectures.each {
       checkout scm
     }
 
-    stage( 'Build' ) {
+    stage( 'Prepare ' + architecture ) {
       sh 'docker pull area51/node:latest'
+    }
 
+    stage( 'Build ' + architecture ) {
       sh 'docker build' +
         ' -t ' + dockerImage( architecture ) +
         ' --build-arg VERSION=' + buildVersion +
         ' .'
+    }
 
+    stage( 'Publish ' + architecture ) {
       sh 'docker push ' + dockerImage( architecture )
     }
   }
