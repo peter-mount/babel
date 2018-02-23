@@ -1,8 +1,5 @@
 
-# The default architecture
-ARG arch=amd64
-
-FROM area51/${arch}-node:latest
+FROM area51/node:latest
 
 ADD babel /usr/local/babel
 ADD bin /usr/local/bin/
