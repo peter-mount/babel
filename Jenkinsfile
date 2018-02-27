@@ -65,15 +65,15 @@ architectures.each {
       sh 'docker pull area51/node:latest'
     }
 
-    stage( 'Build babel ' + architecture ) {
+    stage( 'Babel ' + architecture ) {
       sh 'docker build -t ' + dockerImage( '', architecture ) + ' --target babel .'
     }
 
-    stage( 'Build react ' + architecture ) {
+    stage( 'React ' + architecture ) {
       sh 'docker build -t ' + dockerImage( 'react', architecture ) + ' --target react .'
     }
 
-    stage( 'Publish babel ' + architecture ) {
+    stage( 'Publish ' + architecture ) {
       sh 'docker push ' + dockerImage( '', architecture )
       sh 'docker push ' + dockerImage( 'react', architecture )
     }
@@ -81,7 +81,7 @@ architectures.each {
 }
 
 def multiArchBuild = {
-  prefix, label -> stage( 'Publish ' + label + 'MultiArch' ) {
+  prefix, label -> stage( label + 'MultiArch' ) {
     // The manifest to publish
     multiImage = dockerImage( prefix, '' )
 
