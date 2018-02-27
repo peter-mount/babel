@@ -1,5 +1,5 @@
-// ============================================================
-// The main babel image
+# ============================================================
+# The main babel image
 FROM area51/node:latest as babel
 
 ADD babel /usr/local/babel
@@ -12,8 +12,8 @@ RUN cd /usr/local/babel &&\
       webpack-cli &&\
     chmod +x /usr/local/bin/*
 
-// ============================================================
-// the babel+react image
+# ============================================================
+# the babel+react image
 FROM babel as react
 
 RUN cd /usr/local/babel/ &&\
