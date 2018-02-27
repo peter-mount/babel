@@ -28,7 +28,8 @@ def slaveId = {
 // The docker image name
 // architecture can be '' for multiarch images
 def dockerImage = {
-  architecture -> repository + imagePrefix + ':' +
+  prefix, architecture -> repository + imagePrefix + ':' +
+    ( prefix=='' ? '' : ( prefix + '-' ) ) +
     ( architecture=='' ? '' : ( architecture + '-' ) ) +
     version
 }
@@ -61,29 +62,31 @@ architectures.each {
   architecture -> node( slaveId( architecture ) ) {
     stage( "Checkout " + architecture ) {
       checkout scm
-    }
-
-    stage( 'Prepare ' + architecture ) {
       sh 'docker pull area51/node:latest'
     }
 
-    stage( 'Build ' + architecture ) {
-      sh 'docker build -t ' + dockerImage( architecture ) + ' .'
+    stage( 'Build babel ' + architecture ) {
+      sh 'docker build -t ' + dockerImage( '', architecture ) + ' --target babel .'
     }
 
-    stage( 'Publish ' + architecture ) {
-      sh 'docker push ' + dockerImage( architecture )
+    stage( 'Build react ' + architecture ) {
+      sh 'docker build -t ' + dockerImage( 'react', architecture ) + ' --target react .'
+    }
+
+    stage( 'Publish babel ' + architecture ) {
+      sh 'docker push ' + dockerImage( '', architecture )
+      sh 'docker push ' + dockerImage( 'react', architecture )
     }
   }
 }
 
-node( "AMD64" ) {
-  stage( 'Publish MultiArch' ) {
+def multiArchBuild = {
+  prefix, label -> stage( 'Publish ' + label + 'MultiArch' ) {
     // The manifest to publish
-    multiImage = dockerImage( '' )
+    multiImage = dockerImage( prefix, '' )
 
     // Create/amend the manifest with our architectures
-    manifests = architectures.collect { architecture -> dockerImage( architecture ) }
+    manifests = architectures.collect { architecture -> dockerImage( prefix, architecture ) }
     sh 'docker manifest create -a ' + multiImage + ' ' + manifests.join(' ')
 
     // For each architecture annotate them to be correct
@@ -92,10 +95,15 @@ node( "AMD64" ) {
         ' --os linux' +
         ' --arch ' + goarch( architecture ) +
         ' ' + multiImage +
-        ' ' + dockerImage( architecture )
+        ' ' + dockerImage( prefix, architecture )
     }
 
     // Publish the manifest
     sh 'docker manifest push -p ' + multiImage
   }
+}
+
+node( "AMD64" ) {
+  multiArchBuild( '', 'babel' )
+  multiArchBuild( 'react', 'react' )
 }
