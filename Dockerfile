@@ -7,6 +7,7 @@ ADD bin /usr/local/bin/
 
 RUN cd /usr/local/babel &&\
     npm install &&\
+    npm config set unsafe-perm true &&\
     npm install -g \
       webpack \
       webpack-cli &&\
