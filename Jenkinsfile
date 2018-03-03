@@ -91,7 +91,7 @@ def buildArch = {
 def multiArchBuild = {
   target ->
     node( "AMD64" ) {
-      stage( target + 'MultiArch' ) {
+      stage( target + ' MultiArch' ) {
         // tag prefix
         prefix = tagPrefix( target )
 
