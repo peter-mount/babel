@@ -4,14 +4,34 @@ repository= 'area51/'
 // image prefix
 imagePrefix = 'babel'
 
+// The targets to build - 'babel' must be first as it's common to all targets
+// Ideally this is the order of the stages within Dockerfile
+targets = [ 'babel', 'react' ]
+
+properties( [
+  buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '10')),
+  disableConcurrentBuilds(),
+  disableResume(),
+  pipelineTriggers([
+    upstream('/Public/Node/master'),
+  ])
+])
+
+// ======================================================================
+// NO CONFIGURATION BELOW THIS POINT
+// ======================================================================
+
+// The architectures to build, in format recognised by docker
+architectures = [ 'amd64', 'arm64v8' ]
+
+// The tag prefix, '' for babel or the target for all others
+def tagPrefix = target -> { target == 'babel' ? '' : target }
+
 // The image version, master branch is latest in docker
 version=BRANCH_NAME
 if( version == 'master' ) {
   version = 'latest'
 }
-
-// The architectures to build, in format recognised by docker
-architectures = [ 'amd64', 'arm64v8' ]
 
 // The slave label based on architecture
 def slaveId = {
@@ -49,61 +69,70 @@ def goarch = {
   }
 }
 
-properties( [
-  buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '10')),
-  disableConcurrentBuilds(),
-  disableResume(),
-  pipelineTriggers([
-    upstream('/Public/Node/master'),
-  ])
-])
+// target is either babel or react
+// prefix is prefix to tag, '' for babel, 'react' for react
+def buildArch = {
+  architecture, target ->
+    node( slaveId( architecture ) ) {
+      stage( architecture ) {
+        checkout scm
+        sh 'docker pull area51/node:latest'
 
-architectures.each {
-  architecture -> node( slaveId( architecture ) ) {
-    stage( "Checkout " + architecture ) {
-      checkout scm
-      sh 'docker pull area51/node:latest'
-    }
+        sh 'docker build ' +
+          '-t ' + dockerImage( tagPrefix( target ), architecture ) +
+          ' --target ' + target +
+          ' .'
 
-    stage( 'Babel ' + architecture ) {
-      sh 'docker build -t ' + dockerImage( '', architecture ) + ' --target babel .'
+        sh 'docker push ' + dockerImage( tagPrefix( target ), architecture )
+      }
     }
-
-    stage( 'React ' + architecture ) {
-      sh 'docker build -t ' + dockerImage( 'react', architecture ) + ' --target react .'
-    }
-
-    stage( 'Publish ' + architecture ) {
-      sh 'docker push ' + dockerImage( '', architecture )
-      sh 'docker push ' + dockerImage( 'react', architecture )
-    }
-  }
 }
 
 def multiArchBuild = {
-  prefix, label -> stage( label + 'MultiArch' ) {
-    // The manifest to publish
-    multiImage = dockerImage( prefix, '' )
+  target ->
+    node( "AMD64" ) {
+      stage( target + 'MultiArch' ) {
+        // tag prefix
+        prefix = tagPrefix( target )
 
-    // Create/amend the manifest with our architectures
-    manifests = architectures.collect { architecture -> dockerImage( prefix, architecture ) }
-    sh 'docker manifest create -a ' + multiImage + ' ' + manifests.join(' ')
+        // The manifest to publish
+        multiImage = dockerImage( prefix, '' )
 
-    // For each architecture annotate them to be correct
-    architectures.each {
-      architecture -> sh 'docker manifest annotate' +
-        ' --os linux' +
-        ' --arch ' + goarch( architecture ) +
-        ' ' + multiImage +
-        ' ' + dockerImage( prefix, architecture )
+        // Create/amend the manifest with our architectures
+        manifests = architectures.collect { architecture -> dockerImage( prefix, architecture ) }
+        sh 'docker manifest create -a ' + multiImage + ' ' + manifests.join(' ')
+
+        // For each architecture annotate them to be correct
+        architectures.each {
+          architecture -> sh 'docker manifest annotate' +
+            ' --os linux' +
+            ' --arch ' + goarch( architecture ) +
+            ' ' + multiImage +
+            ' ' + dockerImage( prefix, architecture )
+        }
+
+        // Publish the manifest
+        sh 'docker manifest push -p ' + multiImage
+      }
+    }
+}
+
+// Build the image for a specific target
+def buildImage = {
+  target ->
+    stage( target ) {
+      parallel(
+        'amd64': {
+          buildArch( 'amd64', target )
+        },
+        'arm64v8': {
+          buildArch( 'arm64v8', target )
+        }
+      )
     }
 
-    // Publish the manifest
-    sh 'docker manifest push -p ' + multiImage
-  }
+    multiArchBuild( target )
 }
 
-node( "AMD64" ) {
-  multiArchBuild( '', 'babel' )
-  multiArchBuild( 'react', 'react' )
-}
+// Finally run the builds
+targets.each { target -> buildImage( target ) }
