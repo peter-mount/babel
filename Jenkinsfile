@@ -25,7 +25,7 @@ properties( [
 architectures = [ 'amd64', 'arm64v8' ]
 
 // The tag prefix, '' for babel or the target for all others
-def tagPrefix = { target -> { target == 'babel' ? '' : target } }
+def tagPrefix = { target -> target == 'babel' ? '' : target }
 
 // The image version, master branch is latest in docker
 version=BRANCH_NAME
