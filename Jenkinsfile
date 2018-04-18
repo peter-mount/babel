@@ -13,7 +13,7 @@ properties( [
   disableConcurrentBuilds(),
   disableResume(),
   pipelineTriggers([
-    upstream('/Public/Node/master'),
+    upstream('/peter-mount/Node/master'),
   ])
 ])
 
