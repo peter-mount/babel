@@ -6,7 +6,7 @@ imagePrefix = 'babel'
 
 // The targets to build - 'babel' must be first as it's common to all targets
 // Ideally this is the order of the stages within Dockerfile
-targets = [ 'babel', 'react' ]
+targets = [ 'babel', 'react', 'grunt' ]
 
 properties( [
   buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '10')),

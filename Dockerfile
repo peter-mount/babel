@@ -23,3 +23,20 @@ RUN cd /usr/local/babel/ &&\
       babel-preset-stage-0 \
       eslint-plugin-jsx-a11y \
       eslint-plugin-react
+
+# ============================================================
+# Babel + grunt image
+FROM babel as grunt
+
+RUN cd /usr/local/babel/ &&\
+    npm install \
+      grunt \
+      grunt-cli \
+      grunt-contrib-clean \
+      grunt-contrib-copy \
+      grunt-contrib-concat \
+      grunt-contrib-cssmin \
+      grunt-contrib-htmlmin \
+      grunt-contrib-uglify \
+      grunt-newer &&\
+    ln -s /usr/local/babel/node_modules/grunt-cli/bin/grunt /usr/bin/grunt
